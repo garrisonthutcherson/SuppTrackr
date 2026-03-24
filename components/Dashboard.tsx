@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Search, Bell, User, TrendingDown, Pill, Droplet, Zap, AlertTriangle, CheckCircle2, LogOut } from 'lucide-react';
@@ -8,18 +9,59 @@ import BottomNav from './BottomNav';
 import { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-/**
- * Dashboard Component
- * 
- * The main user interface after successful authentication.
- * Displays the user's current supplement stack, optimal intake times,
- * price alerts, and bio-conflict analysis.
- * 
- * @param user - The authenticated Firebase user object
- */
-export default function Dashboard({ user }: { user: FirebaseUser | null }) {
+function DashboardContent({ user }: { user: FirebaseUser | null }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  
   // State to track the currently active tab in the navigation
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(tabParam || 'dashboard');
+  
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+  useEffect(() => {
+    // Debounce the search input to avoid spamming the NIH API
+    // We wait 500ms after the user stops typing before making the request
+    const delayDebounceFn = setTimeout(async () => {
+      // Only search if we have at least 3 characters
+      if (searchQuery.trim().length > 2) {
+        setIsSearching(true);
+        setShowResults(true);
+        try {
+          const res = await fetch(`/api/search-supplements?q=${encodeURIComponent(searchQuery)}`);
+          if (res.ok) {
+            const data = await res.json();
+            // The DSLD v8 API returns results in a 'hits' array.
+            // TODO: Add pagination if hits exceed 50
+            setSearchResults(data.hits || []);
+          } else {
+            setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Search error:", error);
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        // Clear results if the search query is too short
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    }, 500);
+
+    // Cleanup function: clears the timeout if the user types again before 500ms
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   /**
    * Handles user sign out by calling the Firebase auth.signOut() method.
@@ -41,15 +83,61 @@ export default function Dashboard({ user }: { user: FirebaseUser | null }) {
       <main className="flex-1 md:ml-64 relative pb-24 md:pb-0">
         {/* Top App Bar */}
         <header className="sticky top-0 z-30 bg-background/60 backdrop-blur-xl flex items-center justify-between px-6 py-4 border-b border-white/5">
-          <div className="flex-1 max-w-md hidden md:block">
+          <div className="flex-1 max-w-md hidden md:block relative">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input 
                 type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => { if (searchQuery.length > 2) setShowResults(true); }}
+                onBlur={() => setTimeout(() => setShowResults(false), 200)}
                 placeholder="Search supplements, biomarkers..." 
                 className="w-full bg-surface-container-highest border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-slate-500 text-on-surface outline-none"
               />
             </div>
+            
+            {/* Search Results Dropdown */}
+            {showResults && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50 max-h-96 overflow-y-auto">
+                {isSearching ? (
+                  <div className="p-4 text-center text-sm text-slate-400">Searching NIH Database...</div>
+                ) : searchResults.length > 0 ? (
+                  <ul className="divide-y divide-white/5">
+                    {searchResults.map((item, idx) => {
+                      const source = item._source || {};
+                      return (
+                        <li 
+                          key={idx} 
+                          className="p-3 hover:bg-white/5 cursor-pointer transition-colors flex items-center gap-3"
+                          onMouseDown={() => {
+                            router.push(`/supplement/${item._id}`);
+                          }}
+                        >
+                          <div className="w-10 h-10 bg-white/5 rounded overflow-hidden relative shrink-0">
+                            <img 
+                              src={`https://api.ods.od.nih.gov/dsld/s3/pdf/thumbnails/${item._id}.jpg`}
+                              alt={source.productName || 'Product'}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/supplement/100/100';
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm text-on-surface truncate">{source.productName || 'Unknown Product'}</p>
+                            <p className="text-xs text-slate-400 truncate">{source.brand || 'Generic'}</p>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : (
+                  <div className="p-4 text-center text-sm text-slate-400">No supplements found.</div>
+                )}
+              </div>
+            )}
           </div>
           <div className="md:hidden flex items-center gap-2">
             <h1 className="font-headline font-black text-primary text-xl tracking-tighter">SuppTracker</h1>
@@ -281,5 +369,13 @@ export default function Dashboard({ user }: { user: FirebaseUser | null }) {
       
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
+  );
+}
+
+export default function Dashboard({ user }: { user: FirebaseUser | null }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+      <DashboardContent user={user} />
+    </Suspense>
   );
 }

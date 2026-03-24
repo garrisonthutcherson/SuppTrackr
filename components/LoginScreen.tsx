@@ -37,6 +37,7 @@ export default function LoginScreen() {
    * from Firebase Storage when the component mounts.
    */
   useEffect(() => {
+    // We load these from Firebase Storage so we can update them without a code deploy
     const fetchImages = async () => {
       try {
         const dUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-desktop-bg.png'));
@@ -45,6 +46,7 @@ export default function LoginScreen() {
         setMobileBg(mUrl);
       } catch (error) {
         console.error("Error fetching background images:", error);
+        // TODO: Add local fallback images if Firebase Storage fails
       }
     };
     fetchImages();
@@ -62,9 +64,11 @@ export default function LoginScreen() {
       setError(null);
       // Trigger the Firebase popup authentication flow
       await signInWithPopup(auth, provider);
+      // Note: We don't need to manually redirect here because page.tsx is listening to auth state changes
     } catch (err: any) {
       console.error(`${providerName} login error:`, err);
       // Display a user-friendly error message if login fails
+      // Sometimes users close the popup early, which throws an error we might want to ignore later
       setError(err.message || `Failed to sign in with ${providerName}.`);
     } finally {
       setIsLoading(false);

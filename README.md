@@ -38,7 +38,7 @@ SuppTrackr is a modern, responsive web application built with Next.js, Tailwind 
    ```
 
 3. Set up environment variables:
-   Copy `.env.example` to `.env.local` and fill in your Firebase and Gemini API keys.
+   Copy `.env.example` to `.env.local` and fill in your Firebase configuration.
    ```bash
    cp .env.example .env.local
    ```

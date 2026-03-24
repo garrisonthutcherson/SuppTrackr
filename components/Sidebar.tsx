@@ -1,7 +1,11 @@
 'use client';
 import { Activity, Layers, AlertTriangle, Compass, Calendar, ShoppingCart, Settings, HelpCircle } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Sidebar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const navItems = [
     { id: 'dashboard', icon: Activity, label: 'Dashboard' },
     { id: 'stack', icon: Layers, label: 'My Stack' },
@@ -11,9 +15,19 @@ export default function Sidebar({ activeTab, setActiveTab }: { activeTab: string
     { id: 'market', icon: ShoppingCart, label: 'Marketplace' },
   ];
 
+  const handleNavClick = (id: string) => {
+    // If we're on a supplement detail page, route back to the home page with the tab as a query param
+    if (pathname !== '/') {
+      router.push(`/?tab=${id}`);
+    } else {
+      // Otherwise just switch the tab state locally
+      setActiveTab(id);
+    }
+  };
+
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 z-40 bg-surface/60 backdrop-blur-xl flex-col p-6 border-r border-white/5 shadow-[40px_0_60px_rgba(0,0,0,0.2)] hidden md:flex">
-      <div className="mb-10">
+      <div className="mb-10 cursor-pointer" onClick={() => handleNavClick('dashboard')}>
         <h1 className="font-headline font-black text-primary text-xl tracking-tighter flex items-center gap-2">
           <Activity className="w-5 h-5" />
           SuppTracker
@@ -23,11 +37,11 @@ export default function Sidebar({ activeTab, setActiveTab }: { activeTab: string
       
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
-          const isActive = activeTab === item.id;
+          const isActive = activeTab === item.id && pathname === '/';
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleNavClick(item.id)}
               className={`w-full flex items-center gap-4 px-4 py-3 rounded-full transition-all active:translate-x-1 ${
                 isActive 
                   ? 'bg-primary/10 text-primary border-l-2 border-primary' 

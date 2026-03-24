@@ -18,7 +18,7 @@ import { auth } from '@/lib/firebase';
  */
 export default function Home() {
   // State to manage the currently displayed screen
-  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'dashboard'>('splash');
+  const [currentScreen, setCurrentScreen] = useState<'splash' | 'login' | 'dashboard' | 'loading'>('loading');
   
   // State to hold the currently authenticated Firebase user
   const [user, setUser] = useState<User | null>(null);
@@ -27,17 +27,29 @@ export default function Home() {
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   /**
+   * Effect: Check if splash screen was already shown in this session
+   */
+  useEffect(() => {
+    // We only want to show the splash screen once per session to avoid annoying the user
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (!hasShownSplash) {
+      setCurrentScreen('splash');
+    }
+  }, []);
+
+  /**
    * Effect: Firebase Authentication Listener
    * Subscribes to auth state changes when the component mounts.
    * Updates the `user` state and marks auth as ready.
    */
   useEffect(() => {
+    // Listen for auth state changes (login, logout, token refresh)
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setIsAuthReady(true);
     });
     
-    // Cleanup subscription on unmount
+    // Cleanup subscription on unmount to prevent memory leaks
     return () => unsubscribe();
   }, []);
 
@@ -48,20 +60,27 @@ export default function Home() {
    * Includes a minimum display time for the splash screen.
    */
   useEffect(() => {
-    if (currentScreen === 'splash' && isAuthReady) {
-      // Set a timer to ensure the splash screen is visible for at least 3.5 seconds
+    // Don't do anything until we know the user's auth status
+    if (!isAuthReady) return;
+
+    if (currentScreen === 'splash') {
+      // Force the splash screen to stay visible for at least 3.5 seconds
+      // Gives the app time to load assets and looks cool
       const timer = setTimeout(() => {
-        if (user) {
-          // User is logged in, go to dashboard
-          setCurrentScreen('dashboard');
-        } else {
-          // User is not logged in, go to login screen
-          setCurrentScreen('login');
-        }
+        sessionStorage.setItem('splashShown', 'true');
+        setCurrentScreen(user ? 'dashboard' : 'login');
       }, 3500); 
       
-      // Cleanup timer on unmount or state change
       return () => clearTimeout(timer);
+    } else if (currentScreen === 'loading') {
+      // Splash was already shown this session, skip it and go directly to the appropriate screen
+      setCurrentScreen(user ? 'dashboard' : 'login');
+    } else if (currentScreen === 'login' && user) {
+      // User just logged in, redirect them to the dashboard
+      setCurrentScreen('dashboard');
+    } else if (currentScreen === 'dashboard' && !user) {
+      // User just logged out, kick them back to the login screen
+      setCurrentScreen('login');
     }
   }, [currentScreen, isAuthReady, user]);
 
