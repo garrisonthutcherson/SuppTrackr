@@ -46,7 +46,7 @@ export default function LoginScreen() {
         setMobileBg(mUrl);
       } catch (error) {
         console.error("Error fetching background images:", error);
-        // TODO: Add local fallback images if Firebase Storage fails
+        // Future enhancement: Add local fallback images for resilience
       }
     };
     fetchImages();
@@ -64,7 +64,7 @@ export default function LoginScreen() {
       setError(null);
       // Trigger the Firebase popup authentication flow
       await signInWithPopup(auth, provider);
-      // Note: We don't need to manually redirect here because page.tsx is listening to auth state changes
+      // The root page handles navigation based on the reactive auth state provided by Firebase
     } catch (err: any) {
       console.error(`${providerName} login error:`, err);
       // Display a user-friendly error message if login fails

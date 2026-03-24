@@ -6,10 +6,13 @@ import { useState, useEffect } from 'react';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/lib/firebase';
 
+import pkg from '../package.json';
+
 export default function SplashScreen() {
   const [progress, setProgress] = useState(0);
   const [desktopBg, setDesktopBg] = useState<string | null>(null);
   const [mobileBg, setMobileBg] = useState<string | null>(null);
+  const version = pkg.version;
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -148,7 +151,7 @@ export default function SplashScreen() {
       {/* Footer Metadata */}
       <div className="absolute bottom-12 z-10 text-center">
         <p className="text-[10px] font-label text-on-surface-variant tracking-[0.2em] font-medium opacity-40 uppercase">
-          System Version 4.0.2 // Neural Sync Active
+          {`System Version ${version} // Neural Sync Active`}
         </p>
       </div>
     </div>

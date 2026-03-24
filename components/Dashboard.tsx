@@ -62,7 +62,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
           if (res.ok) {
             const data = await res.json();
             // The DSLD v8 API returns results in a 'hits' array.
-            // TODO: Add pagination if hits exceed 50
+            // Pagination logic for large result sets can be implemented here if needed
             setSearchResults(data.hits || []);
           } else {
             setSearchResults([]);
@@ -172,7 +172,10 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
           </div>
           <div className="flex items-center gap-4 ml-auto relative">
             <button 
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowProfileMenu(false);
+              }}
               className={`transition-colors ${showNotifications ? 'text-primary' : 'text-slate-400 hover:text-primary'}`}
             >
               <Bell className="w-5 h-5" />
@@ -201,7 +204,10 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
 
             <div className="flex items-center gap-3 relative">
               <button 
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                onClick={() => {
+                  setShowProfileMenu(!showProfileMenu);
+                  setShowNotifications(false);
+                }}
                 className="h-8 w-8 rounded-full overflow-hidden border border-primary/20 hover:border-primary/50 transition-colors"
               >
                 <Image 
