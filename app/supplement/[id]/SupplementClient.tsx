@@ -165,6 +165,7 @@ export default function SupplementClient({ id }: { id: string }) {
                     src={`https://api.ods.od.nih.gov/dsld/s3/pdf/thumbnails/${id}.jpg`}
                     alt={productName} 
                     fill
+                    priority
                     sizes="(max-width: 1024px) 100vw, 33vw"
                     className="object-contain"
                     referrerPolicy="no-referrer"

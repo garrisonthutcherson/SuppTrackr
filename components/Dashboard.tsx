@@ -209,6 +209,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                   alt="User profile" 
                   width={32} 
                   height={32} 
+                  priority
                   className="object-cover"
                   referrerPolicy="no-referrer"
                 />
@@ -434,6 +435,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                   src="https://picsum.photos/seed/supp/400/400" 
                   alt="Supplement" 
                   fill 
+                  priority
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover"
                   referrerPolicy="no-referrer"
