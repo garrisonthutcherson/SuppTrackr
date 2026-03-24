@@ -8,7 +8,7 @@ export default function BottomNav({ activeTab, setActiveTab }: { activeTab: stri
 
   const navItems = [
     { id: 'dashboard', icon: Activity, label: 'Home' },
-    { id: 'stack', icon: Layers, label: 'Stack' },
+    { id: 'stack', icon: Layers, label: 'Stacks' },
     { id: 'conflicts', icon: AlertTriangle, label: 'Alerts' },
     { id: 'discover', icon: Compass, label: 'Discover' },
     { id: 'market', icon: ShoppingCart, label: 'Market' },

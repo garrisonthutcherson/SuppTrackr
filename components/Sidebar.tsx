@@ -18,7 +18,7 @@ export default function Sidebar({
 
   const navItems = [
     { id: 'dashboard', icon: Activity, label: 'Dashboard' },
-    { id: 'stack', icon: Layers, label: 'My Stack' },
+    { id: 'stack', icon: Layers, label: 'My Stacks' },
     { id: 'conflicts', icon: AlertTriangle, label: 'Conflicts' },
     { id: 'discover', icon: Compass, label: 'Discover' },
     { id: 'schedule', icon: Calendar, label: 'Scheduling' },

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Search, Bell, User, TrendingDown, Pill, Droplet, Zap, AlertTriangle, CheckCircle2, LogOut, Settings, HelpCircle, UserCircle } from 'lucide-react';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
+import MyStacks from './MyStacks';
 import { User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
@@ -263,8 +264,11 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
           </div>
         </header>
 
-        <div className="p-6 max-w-7xl mx-auto space-y-12">
-          {/* Hero Section */}
+        {activeTab === 'stack' ? (
+          <MyStacks />
+        ) : (
+          <div className="p-6 max-w-7xl mx-auto space-y-12 animate-in fade-in duration-500">
+            {/* Hero Section */}
           <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <p className="font-label text-primary font-bold tracking-[0.2em] uppercase text-xs mb-2">Neural Status: Optimized</p>
@@ -466,6 +470,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
             </div>
           </div>
         </div>
+        )}
       </main>
       
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />

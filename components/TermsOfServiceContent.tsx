@@ -63,7 +63,7 @@ export function TermsOfServiceContent() {
 
       <h2 className="text-lg font-bold text-on-surface mt-6">5. User Content</h2>
       <p>
-        You retain ownership of data you input (e.g., logs, schedules). By submitting content, you grant us a worldwide, royalty-free, perpetual, irrevocable license to use, store, analyze, and improve the Service (including for AI/model training where applicable). You represent that your content does not violate any laws or third-party rights.
+        You retain ownership of data you input (e.g., logs, schedules). By submitting content, you grant us a worldwide, royalty-free, perpetual, irrevocable license to use, store, analyze, and improve the Service. You represent that your content does not violate any laws or third-party rights.
       </p>
 
       <h2 className="text-lg font-bold text-on-surface mt-6">6. Intellectual Property</h2>
