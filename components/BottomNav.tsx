@@ -1,0 +1,34 @@
+'use client';
+import { Activity, Layers, AlertTriangle, Compass, ShoppingCart } from 'lucide-react';
+
+export default function BottomNav({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
+  const navItems = [
+    { id: 'dashboard', icon: Activity, label: 'Home' },
+    { id: 'stack', icon: Layers, label: 'Stack' },
+    { id: 'conflicts', icon: AlertTriangle, label: 'Alerts' },
+    { id: 'discover', icon: Compass, label: 'Discover' },
+    { id: 'market', icon: ShoppingCart, label: 'Market' },
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-white/5 px-6 py-3 flex justify-between items-center z-50 rounded-t-[2rem] pb-safe">
+      {navItems.map((item) => {
+        const isActive = activeTab === item.id;
+        return (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center justify-center p-2 transition-all ${
+              isActive ? 'text-primary' : 'text-slate-400 hover:text-white/80'
+            }`}
+          >
+            <div className={`${isActive ? 'bg-primary-container/20 p-2 rounded-2xl shadow-[inset_0_0_10px_rgba(249,171,255,0.1)]' : ''}`}>
+              <item.icon className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] font-label uppercase mt-1 tracking-widest">{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
