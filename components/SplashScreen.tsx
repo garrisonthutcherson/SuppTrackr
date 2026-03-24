@@ -14,8 +14,8 @@ export default function SplashScreen() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const dUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-desktop-bg.png'));
-        const mUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-mobile-bg.png'));
+        const dUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-desktop-bg.webp'));
+        const mUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-mobile-bg.webp'));
         setDesktopBg(dUrl);
         setMobileBg(mUrl);
       } catch (error) {
@@ -56,6 +56,8 @@ export default function SplashScreen() {
             src={desktopBg}
             alt="Biological background desktop"
             fill
+            priority
+            sizes="(min-width: 768px) 100vw, 1px"
             className="object-cover opacity-30 mix-blend-screen hidden md:block"
             referrerPolicy="no-referrer"
           />
@@ -65,6 +67,8 @@ export default function SplashScreen() {
             src={mobileBg}
             alt="Biological background mobile"
             fill
+            priority
+            sizes="(max-width: 767px) 100vw, 1px"
             className="object-cover opacity-30 mix-blend-screen block md:hidden"
             referrerPolicy="no-referrer"
           />

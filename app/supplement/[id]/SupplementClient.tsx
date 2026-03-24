@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { ChevronRight, Star, CheckCircle2, Zap, Brain, Activity, PlusCircle, ShoppingCart, Calendar, AlertTriangle, ArrowRight, FlaskConical, XCircle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
@@ -9,6 +10,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 
 export default function SupplementClient({ id }: { id: string }) {
   const [activeTab, setActiveTab] = useState('supplements');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [supplement, setSupplement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -42,8 +44,13 @@ export default function SupplementClient({ id }: { id: string }) {
   if (loading) {
     return (
       <div className="flex min-h-screen bg-background text-on-surface">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="flex-1 md:ml-64 flex items-center justify-center">
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isCollapsed={isSidebarCollapsed} 
+          setIsCollapsed={setIsSidebarCollapsed} 
+        />
+        <main className={`flex-1 relative transition-all duration-300 flex items-center justify-center ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
           <div className="animate-pulse text-primary">Loading supplement data...</div>
         </main>
       </div>
@@ -53,8 +60,13 @@ export default function SupplementClient({ id }: { id: string }) {
   if (!supplement) {
     return (
       <div className="flex min-h-screen bg-background text-on-surface">
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-        <main className="flex-1 md:ml-64 flex items-center justify-center">
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab} 
+          isCollapsed={isSidebarCollapsed} 
+          setIsCollapsed={setIsSidebarCollapsed} 
+        />
+        <main className={`flex-1 relative transition-all duration-300 flex items-center justify-center ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
           <div className="text-error">Supplement not found.</div>
         </main>
       </div>
@@ -123,9 +135,14 @@ export default function SupplementClient({ id }: { id: string }) {
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        isCollapsed={isSidebarCollapsed} 
+        setIsCollapsed={setIsSidebarCollapsed} 
+      />
       
-      <main className="flex-1 md:ml-64 relative pb-24 md:pb-0">
+      <main className={`flex-1 relative pb-24 md:pb-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
         <div className="p-6 max-w-7xl mx-auto space-y-12">
           
           {/* Breadcrumbs */}
@@ -144,10 +161,12 @@ export default function SupplementClient({ id }: { id: string }) {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
                 {/* Image from DSLD API */}
                 <div className="relative w-full h-full drop-shadow-2xl">
-                  <img 
+                  <Image 
                     src={`https://api.ods.od.nih.gov/dsld/s3/pdf/thumbnails/${id}.jpg`}
                     alt={productName} 
-                    className="w-full h-full object-contain"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    className="object-contain"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/supplement-bottle/400/400';

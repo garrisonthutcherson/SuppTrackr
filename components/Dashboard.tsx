@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
-import { Search, Bell, User, TrendingDown, Pill, Droplet, Zap, AlertTriangle, CheckCircle2, LogOut } from 'lucide-react';
+import { Search, Bell, User, TrendingDown, Pill, Droplet, Zap, AlertTriangle, CheckCircle2, LogOut, Settings, HelpCircle, UserCircle } from 'lucide-react';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -16,6 +16,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
   
   // State to track the currently active tab in the navigation
   const [activeTab, setActiveTab] = useState(tabParam || 'dashboard');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   useEffect(() => {
     if (tabParam) {
@@ -27,6 +28,26 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setShowNotifications(false);
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showNotifications || showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNotifications, showProfileMenu]);
 
   useEffect(() => {
     // Debounce the search input to avoid spamming the NIH API
@@ -78,9 +99,14 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
 
   return (
     <div className="flex min-h-screen bg-background text-on-surface">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        isCollapsed={isSidebarCollapsed} 
+        setIsCollapsed={setIsSidebarCollapsed} 
+      />
       
-      <main className="flex-1 md:ml-64 relative pb-24 md:pb-0">
+      <main className={`flex-1 relative pb-24 md:pb-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
         {/* Top App Bar */}
         <header className="sticky top-0 z-30 bg-background/60 backdrop-blur-xl flex items-center justify-between px-6 py-4 border-b border-white/5">
           <div className="flex-1 max-w-md hidden md:block relative">
@@ -92,7 +118,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => { if (searchQuery.length > 2) setShowResults(true); }}
                 onBlur={() => setTimeout(() => setShowResults(false), 200)}
-                placeholder="Search supplements, biomarkers..." 
+                placeholder="Search supplements..." 
                 className="w-full bg-surface-container-highest border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/50 placeholder:text-slate-500 text-on-surface outline-none"
               />
             </div>
@@ -115,10 +141,12 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                           }}
                         >
                           <div className="w-10 h-10 bg-white/5 rounded overflow-hidden relative shrink-0">
-                            <img 
+                            <Image 
                               src={`https://api.ods.od.nih.gov/dsld/s3/pdf/thumbnails/${item._id}.jpg`}
                               alt={source.productName || 'Product'}
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="40px"
+                              className="object-cover"
                               referrerPolicy="no-referrer"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/supplement/100/100';
@@ -142,12 +170,40 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
           <div className="md:hidden flex items-center gap-2">
             <h1 className="font-headline font-black text-primary text-xl tracking-tighter">SuppTracker</h1>
           </div>
-          <div className="flex items-center gap-4 ml-auto">
-            <button className="text-slate-400 hover:text-primary transition-colors">
+          <div className="flex items-center gap-4 ml-auto relative">
+            <button 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={`transition-colors ${showNotifications ? 'text-primary' : 'text-slate-400 hover:text-primary'}`}
+            >
               <Bell className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full overflow-hidden border border-primary/20">
+
+            <AnimatePresence>
+              {showNotifications && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  className="absolute top-full right-0 mt-2 w-64 glass-panel border border-outline-variant/20 rounded-2xl shadow-2xl overflow-hidden z-50"
+                >
+                  <div className="p-4 border-b border-white/5">
+                    <h3 className="font-headline font-bold text-sm uppercase tracking-widest text-slate-400">Notifications</h3>
+                  </div>
+                  <div className="p-8 text-center">
+                    <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Bell className="w-5 h-5 text-slate-500" />
+                    </div>
+                    <p className="text-sm text-slate-400">No notifications</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex items-center gap-3 relative">
+              <button 
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="h-8 w-8 rounded-full overflow-hidden border border-primary/20 hover:border-primary/50 transition-colors"
+              >
                 <Image 
                   src={user?.photoURL || "https://picsum.photos/seed/user/100/100"} 
                   alt="User profile" 
@@ -156,10 +212,46 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                   className="object-cover"
                   referrerPolicy="no-referrer"
                 />
-              </div>
-              <button onClick={handleLogout} className="text-slate-400 hover:text-error transition-colors" title="Sign Out">
-                <LogOut className="w-5 h-5" />
               </button>
+
+              <AnimatePresence>
+                {showProfileMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute top-full right-0 mt-2 w-56 glass-panel border border-outline-variant/20 rounded-2xl shadow-2xl overflow-hidden z-50"
+                  >
+                    <div className="p-4 border-b border-white/5">
+                      <p className="text-xs font-bold text-on-surface truncate">{user?.displayName || 'User'}</p>
+                      <p className="text-[10px] text-slate-400 truncate">{user?.email || 'No email'}</p>
+                    </div>
+                    <div className="p-2">
+                      <button className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors text-sm text-on-surface-variant hover:text-on-surface">
+                        <UserCircle className="w-4 h-4 text-primary" />
+                        <span>Profile</span>
+                      </button>
+                      <button className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors text-sm text-on-surface-variant hover:text-on-surface">
+                        <Settings className="w-4 h-4 text-primary" />
+                        <span>Account Settings</span>
+                      </button>
+                      <button className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors text-sm text-on-surface-variant hover:text-on-surface">
+                        <HelpCircle className="w-4 h-4 text-primary" />
+                        <span>Help</span>
+                      </button>
+                    </div>
+                    <div className="p-2 border-t border-white/5">
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-error/10 transition-colors text-sm text-error"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
@@ -342,6 +434,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                   src="https://picsum.photos/seed/supp/400/400" 
                   alt="Supplement" 
                   fill 
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover"
                   referrerPolicy="no-referrer"
                 />

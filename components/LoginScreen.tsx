@@ -40,8 +40,8 @@ export default function LoginScreen() {
     // We load these from Firebase Storage so we can update them without a code deploy
     const fetchImages = async () => {
       try {
-        const dUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-desktop-bg.png'));
-        const mUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-mobile-bg.png'));
+        const dUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-desktop-bg.webp'));
+        const mUrl = await getDownloadURL(ref(storage, 'assets/supptrackr-mobile-bg.webp'));
         setDesktopBg(dUrl);
         setMobileBg(mUrl);
       } catch (error) {
@@ -84,6 +84,8 @@ export default function LoginScreen() {
             src={desktopBg}
             alt="Biological background desktop"
             fill
+            priority
+            sizes="(min-width: 768px) 100vw, 1px"
             className="object-cover opacity-20 mix-blend-screen hidden md:block"
             referrerPolicy="no-referrer"
           />
@@ -93,6 +95,8 @@ export default function LoginScreen() {
             src={mobileBg}
             alt="Biological background mobile"
             fill
+            priority
+            sizes="(max-width: 767px) 100vw, 1px"
             className="object-cover opacity-20 mix-blend-screen block md:hidden"
             referrerPolicy="no-referrer"
           />

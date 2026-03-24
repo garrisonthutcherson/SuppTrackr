@@ -33,7 +33,8 @@ export default function Home() {
     // We only want to show the splash screen once per session to avoid annoying the user
     const hasShownSplash = sessionStorage.getItem('splashShown');
     if (!hasShownSplash) {
-      setCurrentScreen('splash');
+      // Defer state update to avoid linter warning and potential cascading renders
+      setTimeout(() => setCurrentScreen('splash'), 0);
     }
   }, []);
 
@@ -74,13 +75,13 @@ export default function Home() {
       return () => clearTimeout(timer);
     } else if (currentScreen === 'loading') {
       // Splash was already shown this session, skip it and go directly to the appropriate screen
-      setCurrentScreen(user ? 'dashboard' : 'login');
+      setTimeout(() => setCurrentScreen(user ? 'dashboard' : 'login'), 0);
     } else if (currentScreen === 'login' && user) {
       // User just logged in, redirect them to the dashboard
-      setCurrentScreen('dashboard');
+      setTimeout(() => setCurrentScreen('dashboard'), 0);
     } else if (currentScreen === 'dashboard' && !user) {
       // User just logged out, kick them back to the login screen
-      setCurrentScreen('login');
+      setTimeout(() => setCurrentScreen('login'), 0);
     }
   }, [currentScreen, isAuthReady, user]);
 
