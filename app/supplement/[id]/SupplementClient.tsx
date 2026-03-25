@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import Image from 'next/image';
 import { ChevronRight, Star, CheckCircle2, Zap, Brain, Activity, PlusCircle, ShoppingCart, Calendar, AlertTriangle, ArrowRight, FlaskConical, XCircle } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
@@ -14,6 +14,7 @@ export default function SupplementClient({ id }: { id: string }) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [supplement, setSupplement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -157,10 +158,13 @@ export default function SupplementClient({ id }: { id: string }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             {/* Left Column: Image & Badges */}
             <div className="lg:col-span-4 space-y-6">
-              <div className="bg-surface-container-low rounded-[32px] aspect-square flex items-center justify-center p-8 relative overflow-hidden border border-white/5">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
+              <div 
+                className="bg-surface-container-low rounded-[32px] aspect-square flex items-center justify-center p-8 relative overflow-hidden border border-white/5 cursor-pointer group"
+                onClick={() => setIsImageModalOpen(true)}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent group-hover:from-primary/10 transition-colors"></div>
                 {/* Image from DSLD API */}
-                <div className="relative w-full h-full drop-shadow-2xl">
+                <div className="relative w-full h-full drop-shadow-2xl transition-transform duration-300 group-hover:scale-105">
                   <Image 
                     src={`https://api.ods.od.nih.gov/dsld/s3/pdf/thumbnails/${id}.jpg`}
                     alt={productName} 
@@ -173,13 +177,6 @@ export default function SupplementClient({ id }: { id: string }) {
                       (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/supplement-bottle/400/400';
                     }}
                   />
-                </div>
-                
-                {/* Image pagination dots (mock) */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                  <div className="w-2 h-2 rounded-full bg-white"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/30"></div>
-                  <div className="w-2 h-2 rounded-full bg-white/30"></div>
                 </div>
               </div>
 
@@ -396,6 +393,45 @@ export default function SupplementClient({ id }: { id: string }) {
       </main>
       
       <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      {/* Image Modal */}
+      <AnimatePresence>
+        {isImageModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsImageModalOpen(false)}
+          >
+            <button
+              className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors z-50"
+              onClick={() => setIsImageModalOpen(false)}
+            >
+              <XCircle className="w-8 h-8" />
+            </button>
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="relative w-full max-w-4xl aspect-square md:aspect-video rounded-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={`https://api.ods.od.nih.gov/dsld/s3/pdf/thumbnails/${id}.jpg`}
+                alt={productName}
+                fill
+                sizes="(max-width: 1024px) 100vw, 1024px"
+                className="object-contain"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/supplement-bottle/800/800';
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
 import { Search, Bell, User, TrendingDown, Pill, Droplet, Zap, AlertTriangle, CheckCircle2, LogOut, Settings, HelpCircle, UserCircle } from 'lucide-react';
@@ -193,11 +194,19 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
                   <div className="p-4 border-b border-white/5">
                     <h3 className="font-headline font-bold text-sm uppercase tracking-widest text-slate-400">Notifications</h3>
                   </div>
-                  <div className="p-8 text-center">
+                  <div className="p-8 text-center pb-6">
                     <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-3">
                       <Bell className="w-5 h-5 text-slate-500" />
                     </div>
                     <p className="text-sm text-slate-400">No notifications</p>
+                  </div>
+                  <div className="border-t border-white/5 p-2">
+                    <Link 
+                      href="/notifications" 
+                      className="block w-full text-center text-xs font-bold uppercase tracking-widest text-primary hover:text-primary/80 transition-colors py-2 rounded-lg hover:bg-white/5"
+                    >
+                      View Notifications
+                    </Link>
                   </div>
                 </motion.div>
               )}
@@ -271,7 +280,7 @@ function DashboardContent({ user }: { user: FirebaseUser | null }) {
             {/* Hero Section */}
           <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <p className="font-label text-primary font-bold tracking-[0.2em] uppercase text-xs mb-2">Neural Status: Optimized</p>
+              <p className="font-label text-primary font-bold tracking-[0.2em] uppercase text-xs mb-2">Full Body Optimization Made Easy</p>
               <h2 className="font-headline text-5xl md:text-6xl font-extrabold tracking-tighter text-on-surface">
                 Hello, {user?.displayName ? user.displayName.split(' ')[0] : 'User'}
               </h2>
